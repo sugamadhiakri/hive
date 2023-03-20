@@ -305,7 +305,7 @@ public class TestPartitionManagement {
   }
 
   @Test
-  public void testPartitionDiscoveryNonDefaultCatalog() throws TException, IOException {
+  public void testPartitionDiscoveryNonDefaultCatalog() throws TException, IOException, InterruptedException {
     String catName = "cat3";
     String dbName = "db3";
     String tableName = "tbl3";
@@ -360,8 +360,7 @@ public class TestPartitionManagement {
         partitions = client.listPartitions(catName, dbName, tableName, (short) -1);
         assertEquals(3, partitions.size());
         break;
-      } catch (IOException e) {
-        System.out.println("Error creating partitions: " + e.getMessage());
+      } catch (AssertionError e) {
         if(attempt == maxAttempts) throw e;
         attempt++;
         try {
@@ -381,8 +380,7 @@ public class TestPartitionManagement {
         partitions = client.listPartitions(catName, dbName, tableName, (short) -1);
         assertEquals(5, partitions.size());
         break;
-      } catch (IOException e) {
-        System.out.println("Error creating partitions: " + e.getMessage());
+      } catch (AssertionError e) {
         if(attempt == maxAttempts) throw e;
         attempt++;
         try {
