@@ -351,7 +351,7 @@ public class TestPartitionManagement {
     table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
     client.alter_table(catName, dbName, tableName, table);
 
-    int attempt = 1;
+    attempt = 1;
     while (attempt <= maxAttempts) {
       try {
         // default catalog in conf is 'hive' but we are using 'cat3' as catName for this test, so msck should not fix
@@ -372,7 +372,7 @@ public class TestPartitionManagement {
       }
     }
     
-    int attempt = 1;
+    attempt = 1;
     while (attempt <= maxAttempts) {
       try {
         // using the correct catalog name, we expect msck to fix partitions
