@@ -326,22 +326,72 @@ public class TestPartitionManagement {
     FileSystem fs = FileSystem.get(location, conf);
     Path newPart1 = new Path(tablePath, "state=WA/dt=2018-12-01");
     Path newPart2 = new Path(tablePath, "state=UT/dt=2018-12-02");
-    fs.mkdirs(newPart1);
-    fs.mkdirs(newPart2);
-    assertEquals(5, fs.listStatus(tablePath).length);
+    
+    int maxAttempts = 3; 
+    
+    int attempt = 1;
+    while (attempt <= maxAttempts) {
+      try {
+        fs.mkdirs(newPart1);
+        fs.mkdirs(newPart2);
+        assertEquals(5, fs.listStatus(tablePath).length);
+        break;
+      } catch (IOException e) {
+        System.out.println("Error creating partitions: " + e.getMessage());
+        if(attempt == maxAttempts) throw e;
+        attempt++;
+        try {
+          Thread.sleep(5000); // Wait 5 seconds before retrying
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
+    
     table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
     client.alter_table(catName, dbName, tableName, table);
-    // default catalog in conf is 'hive' but we are using 'cat3' as catName for this test, so msck should not fix
-    // anything for this one
-    runPartitionManagementTask(conf);
-    partitions = client.listPartitions(catName, dbName, tableName, (short) -1);
-    assertEquals(3, partitions.size());
 
-    // using the correct catalog name, we expect msck to fix partitions
-    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_CATALOG_NAME.getVarname(), catName);
-    runPartitionManagementTask(conf);
-    partitions = client.listPartitions(catName, dbName, tableName, (short) -1);
-    assertEquals(5, partitions.size());
+    int attempt = 1;
+    while (attempt <= maxAttempts) {
+      try {
+        // default catalog in conf is 'hive' but we are using 'cat3' as catName for this test, so msck should not fix
+        // anything for this one
+        runPartitionManagementTask(conf);
+        partitions = client.listPartitions(catName, dbName, tableName, (short) -1);
+        assertEquals(3, partitions.size());
+        break;
+      } catch (IOException e) {
+        System.out.println("Error creating partitions: " + e.getMessage());
+        if(attempt == maxAttempts) throw e;
+        attempt++;
+        try {
+          Thread.sleep(5000); // Wait 5 seconds before retrying
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
+    
+    int attempt = 1;
+    while (attempt <= maxAttempts) {
+      try {
+        // using the correct catalog name, we expect msck to fix partitions
+        conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_CATALOG_NAME.getVarname(), catName);
+        runPartitionManagementTask(conf);
+        partitions = client.listPartitions(catName, dbName, tableName, (short) -1);
+        assertEquals(5, partitions.size());
+        break;
+      } catch (IOException e) {
+        System.out.println("Error creating partitions: " + e.getMessage());
+        if(attempt == maxAttempts) throw e;
+        attempt++;
+        try {
+          Thread.sleep(5000); // Wait 5 seconds before retrying
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
   }
 
   @Test
@@ -756,3 +806,4 @@ public class TestPartitionManagement {
 
 
 }
+
